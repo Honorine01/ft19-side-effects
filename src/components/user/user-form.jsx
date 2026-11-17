@@ -2,23 +2,49 @@ import { useState } from 'react';
 
 import { BASE_URL } from '../../lib/utils';
 
-export default function UserForm({ onUserAdded }) {
+export default function UserForm({ onUserAdded, selectedUser, onCancel }) {
 	// controlled forms
 
-	const [user, setUser] = useState({
-		firstName: '',
-		lastName: '',
-		email: '',
-		phone: '',
-		dob: '',
-	});
+	const [user, setUser] = useState(
+    selectedUser
+        ? {
+              firstName: selectedUser.firstName,
+              lastName: selectedUser.lastName,
+              email: selectedUser.email,
+              phone: selectedUser.phone,
+              dob: selectedUser.dob,
+          }
+        : {
+              firstName: '',
+              lastName: '',
+              email: '',
+              phone: '',
+              dob: '',
+          }
+);
+
+function handleCancel() {
+    setUser({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        dob: '',
+    });
+
+    onCancel();
+}
 
 	// logic for submitting the data collected from the forms
 	function handleSubmit(event) {
 		event.preventDefault();
 
-		fetch(`${BASE_URL}/users`, {
-			method: 'POST',
+		fetch(
+    selectedUser
+        ? `${BASE_URL}/users/${selectedUser.id}`
+        : `${BASE_URL}/users`,
+    {
+        method: selectedUser ? 'PUT' : 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
@@ -124,9 +150,22 @@ export default function UserForm({ onUserAdded }) {
 				/>
 			</label>
 
-			<button className="p-3 bg-blue-500 text-white rounded-md mt-5 cursor-pointer">
-				Submit
-			</button>
+			<button
+    type="submit"
+    className="p-3 bg-blue-500 text-white rounded-md mt-5 cursor-pointer"
+>
+    {selectedUser ? 'Update' : 'Submit'}
+</button>
+
+{selectedUser && (
+    <button
+        type="button"
+        onClick={handleCancel}
+        className="p-3 bg-gray-500 text-white rounded-md cursor-pointer"
+    >
+        Cancel
+    </button>
+)}
 		</form>
 	);
 }
